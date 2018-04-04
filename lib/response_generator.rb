@@ -1,6 +1,10 @@
 require 'socket'
+require './lib/diagnostics_output'
 class ResponseGenerator
-attr_reader :request_lines, :counter, :client, :total_count
+    include DiagnosticsOutput
+
+    attr_reader :request_lines, :counter, :client, :total_count
+    
     def initialize
         @request_lines = []
         @counter = 0
@@ -42,7 +46,7 @@ attr_reader :request_lines, :counter, :client, :total_count
         path = find_path(request_lines)
 
         case
-        # when path == "/"            then diagnostics_report
+        when path == "/"            then diagnostics_report(request_lines)
         when path == "/hello"       then hello_world_response
         when path == "/datetime"    then date_and_time
         when path == "/shutdown"    then shutdown
@@ -58,6 +62,19 @@ attr_reader :request_lines, :counter, :client, :total_count
         headers = headers(output)
         @client.puts headers
         @client.puts output
+    end
+
+    def diagnostics_report(request_lines)
+
+        report =   "Verb: #{verb_output(request_lines)}\n" +
+                    "Path: #{path_output(request_lines)}\n" +
+                    "Protocol #{protocol_output(request_lines)}\n" +
+                    "Host: #{host_output(request_lines)}\n" +
+                    "Port: #{port_output(request_lines)}\n" +
+                    "Origin #{origin_output(request_lines)}\n" +
+                    "Accept: #{accept_output(request_lines)}"
+
+        push(report)
     end
 
     def hello_world_response

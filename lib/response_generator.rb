@@ -1,5 +1,6 @@
+require 'socket'
 class ResponseGenerator
-attr_reader :request_lines, :counter, :client
+attr_reader :request_lines, :counter, :client, :total_count
     def initialize
         @request_lines = []
         @counter = 0
@@ -69,13 +70,13 @@ attr_reader :request_lines, :counter, :client
     def shutdown
         total_requests = "Total Requests: #{@total_count}"
         push(total_requests)
+        return []
         # puts "\nResponse complete, exiting."
-        @client.close
     end
 
     def date_and_time
         @total_count += 1
-        time = Time.now.strftime("%H:%M%p on %A,%B%d,%Y")
+        time = Time.now.strftime("%l:%M%p on %A, %B%e, %Y")
         push(time)
     end
 

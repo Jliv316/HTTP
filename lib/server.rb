@@ -3,8 +3,7 @@ require_relative 'response_generator'
 require 'pry'
 
 class Server
-    attr_reader :tcp_server
-    attr_accessor :server_status
+    attr_reader :tcp_server, :connection
     def initialize
         @tcp_server = TCPServer.new(9292)
         @connection = nil
@@ -18,7 +17,7 @@ class Server
             @connection = @tcp_server.accept
             response.accept_client(@connection)
             request_lines = []
-            while line = @server_status.gets and !line.chomp.empty?
+            while line = @connection.gets and !line.chomp.empty?
                 request_lines << line.chomp
             end
             p "Got this request:"

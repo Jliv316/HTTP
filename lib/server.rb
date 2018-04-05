@@ -23,7 +23,7 @@ class Server
             p "Got this request:"
             p request_lines
             response.receive_request_lines(request_lines)
-            output = response.reader(request_lines)
+            output = response.parser(request_lines)
             close_server(output) if output == []
         end 
 

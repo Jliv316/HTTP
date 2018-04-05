@@ -1,5 +1,7 @@
 require 'socket'
 require './lib/diagnostics_output'
+# require './lib/game'
+
 class ResponseGenerator
     include DiagnosticsOutput
 
@@ -10,6 +12,7 @@ class ResponseGenerator
         @counter = 0
         @total_count = 0
         @client = nil
+        # @game = Game.new
     end
 
     def accept_client(client)
@@ -42,20 +45,49 @@ class ResponseGenerator
         path = request_lines[0].split[1]
     end
 
-    def reader(request_lines)
-        path = find_path(request_lines)
+    def find_verb(request_lines)
+        verb = request_lines[0].split[0]
+        # if verb == "GET"
+        #     parser(request_lines)
+        # elsif verb == "POST"
+        #     parser_post(request_lines)
+        # end
+    end
 
-        case
-        when path == "/"            then diagnostics_report(request_lines)
-        when path == "/hello"       then hello_world_response
-        when path == "/datetime"    then date_and_time
-        when path == "/shutdown"    then shutdown
-        when path.include?("word")  then grab_value(path)
-        when path == "/start_game"  then start_game
-        else
-            text = request_lines.join("\n")
-            push(text)
+    
+
+
+    def parser(request_lines)
+        path = find_path(request_lines)
+        verb = find_verb(request_lines)
+        if verb == "GET"
+            case
+            when path == "/"            then diagnostics_report(request_lines)
+            when path == "/hello"       then hello_world_response
+            when path == "/datetime"    then date_and_time
+            when path == "/shutdown"    then shutdown
+            when path.include?("word")  then grab_value(path)
+            else
+                text = request_lines.join("\n")
+                push(text)
+            end
+        elsif verb == "POST"
+            case
+            when path == "/start_game"  then start_game
+            when path == "/game"        then store_and_redirect
+            else
+                text = request_lines.join("\n")
+                push(text)
+            end
         end
+    end
+
+    def start_game
+        text = "Good luck!"
+        push(text)
+    end
+
+    def store_and_redirect
     end
 
     

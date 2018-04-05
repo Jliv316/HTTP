@@ -44,6 +44,18 @@ class ResponseGenerator
     
     end
 
+     def push(text)
+        formatted_response = formatted_response(text)
+        output = output(formatted_response)
+        headers = headers(output)
+        @client.puts headers
+        @client.puts output
+    end
+
+    def push_post(text)
+
+    end
+
     def find_path(request_lines)
         path = request_lines[0].split[1]
     end
@@ -94,36 +106,28 @@ class ResponseGenerator
     #guess is sent from method below called "grab_value"
     def store_and_redirect(guess)
         @guesses << guess
-        guess_response(guess)
+        game_response(guess)
+        #redirect
     end
 
     def game_response(guess)
         guess_feedback = guess_checker(guess)
         number_of_guesses = @guesses.length
-        text = "Number of guesses: #{number_of_guesses}(\n)" +
-                "Previous guess: #{guess}(\n)" +
+        text = "Number of guesses: #{number_of_guesses}\n" +
+                "Previous guess: #{guess}\n" +
                 guess_feedback
+        push(text)
     end
 
     def guess_checker(guess)
         #if the guess is higher than @random_number
-        if guess == @random_number
+        if guess.to_i == @random_number
             return "Horah! You've done it! Congratulations you guessed the correct number!"
-        if guess > @random_number 
+        elsif guess.to_i > @random_number 
             return "Your guess was too high, try again."
-        elsif guess < @random_number
+        elsif guess.to_i < @random_number
             return "Your guess was too low, try again."
         end
-    end
-
-    
-
-    def push(text)
-        formatted_response = formatted_response(text)
-        output = output(formatted_response)
-        headers = headers(output)
-        @client.puts headers
-        @client.puts output
     end
 
     def diagnostics_report(request_lines)
@@ -170,9 +174,20 @@ class ResponseGenerator
         matching_words = File.open("/usr/share/dict/words") do |word|
             word.grep(/\b#{value}\b/)
         end
-        return false if matching_words == []
-        return true
+        return = false if matching_word == []
+        return = true
+        word_output(value)
     end
+
+    def word_ouput(value)
+        if word_lookup == false
+            text = "#{value.upcase} is not a known word"
+        elsif word_lookup == true
+            text = "#{value.upcase} is a known word"
+        end
+        push(text)
+    end
+
 
 
 end

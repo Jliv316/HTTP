@@ -4,9 +4,25 @@
 #random number between 0 and 100.
 require 'pry'
 class Game
-    #generate a random number 0 to 100
-    random_number = rand(0..100)
+
+    def initialize
+        @random_number = rand(0..100)
+    end
+    
     #take in path 
+
+    def guess_checker
+        #if the guess is higher than @random_number
+        if guess == @random_number
+            puts "Horah! You've done it! Congratulations you guessed the correct number!"
+        if guess > @random_number 
+            puts "Your guess was too high, try again."
+        elsif guess < @random_number
+            puts "Your guess was too low, try again."
+        end
+    end
+
+    
 
 end
 
@@ -23,3 +39,5 @@ end
 # show some information about the game including how many 
 #guesses have been made, what the most recent guess was, 
 #and whether it was too high, too low, or correct.
+
+#GAME INFO: number_of_guesses, previous_guess, 

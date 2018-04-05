@@ -50,11 +50,15 @@ class ResponseGenerator
         when path == "/hello"       then hello_world_response
         when path == "/datetime"    then date_and_time
         when path == "/shutdown"    then shutdown
+        when path.include?("word")  then grab_value(path)
+        when path == "/start_game"  then start_game
         else
             text = request_lines.join("\n")
             push(text)
         end
     end
+
+    
 
     def push(text)
         formatted_response = formatted_response(text)
@@ -95,6 +99,20 @@ class ResponseGenerator
         @total_count += 1
         time = Time.now.strftime("%l:%M%p on %A, %B%e, %Y")
         push(time)
+    end
+
+    def grab_value(path)
+        value = path.split("=")[1]
+        word_lookup(value)
+    end
+
+    def word_lookup(value)
+
+        matching_words = File.open("/usr/share/dict/words") do |word|
+            word.grep(/\b#{value}\b/)
+        end
+        return false if matching_words == []
+        return true
     end
 
 

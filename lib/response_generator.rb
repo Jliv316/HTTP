@@ -1,11 +1,19 @@
 require 'socket'
+require './lib/diagnostics_output'
+# require './lib/game'
+
 class ResponseGenerator
-attr_reader :request_lines, :counter, :client, :total_count
+    include DiagnosticsOutput
+
+    attr_reader :request_lines, :counter, :client, :total_count, :random_number
+    
     def initialize
         @request_lines = []
         @counter = 0
         @total_count = 0
         @client = nil
+        @random_number = nil
+        # @game = Game.new
     end
 
     def accept_client(client)
@@ -38,19 +46,57 @@ attr_reader :request_lines, :counter, :client, :total_count
         path = request_lines[0].split[1]
     end
 
-    def reader(request_lines)
-        path = find_path(request_lines)
+    def find_verb(request_lines)
+        verb = request_lines[0].split[0]
+        # if verb == "GET"
+        #     parser(request_lines)
+        # elsif verb == "POST"
+        #     parser_post(request_lines)
+        # end
+    end
 
-        case
-        # when path == "/"            then diagnostics_report
-        when path == "/hello"       then hello_world_response
-        when path == "/datetime"    then date_and_time
-        when path == "/shutdown"    then shutdown
-        else
-            text = request_lines.join("\n")
-            push(text)
+    
+
+
+    def parser(request_lines)
+        path = find_path(request_lines)
+        verb = find_verb(request_lines)
+        if verb == "GET"
+            case
+            when path == "/"            then diagnostics_report(request_lines)
+            when path == "/hello"       then hello_world_response
+            when path == "/datetime"    then date_and_time
+            when path == "/shutdown"    then shutdown
+            when path.include?("word")  then grab_value(path)
+            else
+                text = request_lines.join("\n")
+                push(text)
+            end
+        elsif verb == "POST"
+            case
+            when path == "/start_game"  then start_game
+            when path == "/game"        then store_and_redirect
+            else
+                text = request_lines.join("\n")
+                push(text)
+            end
         end
     end
+
+    #we want to start a game
+    #
+
+    def start_game
+        text = "Good luck!"
+        push(text)
+        random_number = rand(0..100)
+        store_and_redirect(random_number)
+    end
+
+    def store_and_redirect
+    end
+
+    
 
     def push(text)
         formatted_response = formatted_response(text)
@@ -58,6 +104,19 @@ attr_reader :request_lines, :counter, :client, :total_count
         headers = headers(output)
         @client.puts headers
         @client.puts output
+    end
+
+    def diagnostics_report(request_lines)
+
+        report =   "Verb: #{verb_output(request_lines)}\n" +
+                    "Path: #{path_output(request_lines)}\n" +
+                    "Protocol #{protocol_output(request_lines)}\n" +
+                    "Host: #{host_output(request_lines)}\n" +
+                    "Port: #{port_output(request_lines)}\n" +
+                    "Origin #{origin_output(request_lines)}\n" +
+                    "Accept: #{accept_output(request_lines)}"
+
+        push(report)
     end
 
     def hello_world_response
@@ -78,6 +137,20 @@ attr_reader :request_lines, :counter, :client, :total_count
         @total_count += 1
         time = Time.now.strftime("%l:%M%p on %A, %B%e, %Y")
         push(time)
+    end
+
+    def grab_value(path)
+        value = path.split("=")[1]
+        word_lookup(value)
+    end
+
+    def word_lookup(value)
+
+        matching_words = File.open("/usr/share/dict/words") do |word|
+            word.grep(/\b#{value}\b/)
+        end
+        return false if matching_words == []
+        return true
     end
 
 

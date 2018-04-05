@@ -5,7 +5,8 @@ require './lib/diagnostics_output'
 class ResponseGenerator
     include DiagnosticsOutput
 
-    attr_reader :request_lines, :counter, :client, :total_count, :random_number
+    attr_reader :request_lines, :counter, :client, :total_count, :random_number,
+                :guesses
     
     def initialize
         @request_lines = []
@@ -13,6 +14,7 @@ class ResponseGenerator
         @total_count = 0
         @client = nil
         @random_number = nil
+        @guesses = []
         # @game = Game.new
     end
 
@@ -48,11 +50,6 @@ class ResponseGenerator
 
     def find_verb(request_lines)
         verb = request_lines[0].split[0]
-        # if verb == "GET"
-        #     parser(request_lines)
-        # elsif verb == "POST"
-        #     parser_post(request_lines)
-        # end
     end
 
     
@@ -68,6 +65,7 @@ class ResponseGenerator
             when path == "/datetime"    then date_and_time
             when path == "/shutdown"    then shutdown
             when path.include?("word")  then grab_value(path)
+            when path.include?("game")  then game_response
             else
                 text = request_lines.join("\n")
                 push(text)
@@ -75,7 +73,7 @@ class ResponseGenerator
         elsif verb == "POST"
             case
             when path == "/start_game"  then start_game
-            when path == "/game"        then store_and_redirect
+            when path.include?("game")  then grab_value(path)
             else
                 text = request_lines.join("\n")
                 push(text)
@@ -89,11 +87,33 @@ class ResponseGenerator
     def start_game
         text = "Good luck!"
         push(text)
-        random_number = rand(0..100)
-        store_and_redirect(random_number)
+        @random_number = rand(0..100)
     end
 
-    def store_and_redirect
+   
+    #guess is sent from method below called "grab_value"
+    def store_and_redirect(guess)
+        @guesses << guess
+        guess_response(guess)
+    end
+
+    def game_response(guess)
+        guess_feedback = guess_checker(guess)
+        number_of_guesses = @guesses.length
+        text = "Number of guesses: #{number_of_guesses}(\n)" +
+                "Previous guess: #{guess}(\n)" +
+                guess_feedback
+    end
+
+    def guess_checker(guess)
+        #if the guess is higher than @random_number
+        if guess == @random_number
+            return "Horah! You've done it! Congratulations you guessed the correct number!"
+        if guess > @random_number 
+            return "Your guess was too high, try again."
+        elsif guess < @random_number
+            return "Your guess was too low, try again."
+        end
     end
 
     
@@ -141,7 +161,8 @@ class ResponseGenerator
 
     def grab_value(path)
         value = path.split("=")[1]
-        word_lookup(value)
+        word_lookup(value) if path.include?("word")
+        store_and_redirect(value) if path.include?("guess")
     end
 
     def word_lookup(value)

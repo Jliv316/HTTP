@@ -15,7 +15,7 @@ class Server
         
         loop do 
             @connection = @tcp_server.accept
-            response.accept_client(@connection)
+            response.accept_connection(@connection)
             request_lines = []
             while line = @connection.gets and !line.chomp.empty?
                 request_lines << line.chomp

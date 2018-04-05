@@ -5,21 +5,21 @@ require './lib/diagnostics_output'
 class ResponseGenerator
     include DiagnosticsOutput
 
-    attr_reader :request_lines, :counter, :client, :total_count, :random_number,
+    attr_reader :request_lines, :counter, :connection, :total_count, :random_number,
                 :guesses
     
     def initialize
         @request_lines = []
         @counter = 0
         @total_count = 0
-        @client = nil
+        @connection = nil
         @random_number = nil
         @guesses = []
         # @game = Game.new
     end
 
-    def accept_client(client)
-        @client = client
+    def accept_connection(connection)
+        @connection = connection
     end
 
     def receive_request_lines(request_lines)
@@ -41,20 +41,33 @@ class ResponseGenerator
           "content-type: text/html; charset=iso-8859-1",
           "content-length: #{output.length}\r\n\r\n"
         ].join("\r\n")
-    
     end
 
      def push(text)
         formatted_response = formatted_response(text)
         output = output(formatted_response)
         headers = headers(output)
-        @client.puts headers
-        @client.puts output
+        @connection.puts headers
+        @connection.puts output
     end
 
-    def push_post(text)
+    # def headers_post(output)
+    #     ["http/1.1 302 redirecting",
+    #       "Location: LocalHost:9292/game",
+    #       "date: #{Time.now.strftime('%a, %e %b %Y %H:%M:%S %z')}",
+    #       "server: ruby",
+    #       "content-type: text/html; charset=iso-8859-1",
+    #       "content-length: #{output.length}\r\n\r\n"
+    #     ].join("\r\n")
+    # end
 
-    end
+    # def push_post(text)
+    #     formatted_response = formatted_response(text)
+    #     output = output(formatted_response)
+    #     headers = headers_post(output)
+    #     @connection.puts headers
+    #     @connection.puts output
+    # end
 
     def find_path(request_lines)
         path = request_lines[0].split[1]
@@ -93,13 +106,12 @@ class ResponseGenerator
         end
     end
 
-    #we want to start a game
-    #
 
     def start_game
         text = "Good luck!"
         push(text)
         @random_number = rand(0..100)
+        
     end
 
    

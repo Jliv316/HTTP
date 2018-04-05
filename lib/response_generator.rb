@@ -171,18 +171,19 @@ class ResponseGenerator
 
     def word_lookup(value)
 
-        matching_words = File.open("/usr/share/dict/words") do |word|
+        matching_word = File.open("/usr/share/dict/words") do |word|
             word.grep(/\b#{value}\b/)
         end
-        return = false if matching_word == []
-        return = true
-        word_output(value)
+        contain_word = false if matching_word == []
+        contain_word =  true
+        word_output(value, contain_word)
     end
 
-    def word_ouput(value)
-        if word_lookup == false
+    def word_output(value, contain_word)
+        binding.pry
+        if contain_word == false
             text = "#{value.upcase} is not a known word"
-        elsif word_lookup == true
+        elsif contain_word == true
             text = "#{value.upcase} is a known word"
         end
         push(text)

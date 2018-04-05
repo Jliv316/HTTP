@@ -5,13 +5,14 @@ require './lib/diagnostics_output'
 class ResponseGenerator
     include DiagnosticsOutput
 
-    attr_reader :request_lines, :counter, :client, :total_count
+    attr_reader :request_lines, :counter, :client, :total_count, :random_number
     
     def initialize
         @request_lines = []
         @counter = 0
         @total_count = 0
         @client = nil
+        @random_number = nil
         # @game = Game.new
     end
 
@@ -82,9 +83,14 @@ class ResponseGenerator
         end
     end
 
+    #we want to start a game
+    #
+
     def start_game
         text = "Good luck!"
         push(text)
+        random_number = rand(0..100)
+        store_and_redirect(random_number)
     end
 
     def store_and_redirect
